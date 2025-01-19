@@ -2,7 +2,7 @@ import { User } from "@/lib/models";
 import { badRequestResponse, errorResponse, successfulResponse } from "@/utils/handlers";
 import { NextRequest } from "next/server";
 
-export const GET = async (req: NextRequest, { params }: { params: Awaited<{ userId: string }> }) => {
+export const GET = async (req: NextRequest, { params }: { params: Promise<{ userId: string }> }) => {
   const { userId } = await params;
   if (!userId) return badRequestResponse({ message: "userId is required" });
   try {
