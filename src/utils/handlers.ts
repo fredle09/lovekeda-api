@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { StatusCodes } from "http-status-codes";
 import { TBaseResponseProps } from "@/types/types-import";
 
-const baseResponse = (props: TBaseResponseProps) => {
+export const baseResponse = (props: TBaseResponseProps) => {
   const { status, ...rest } = props;
   return NextResponse.json({ ...rest }, { status });
 };

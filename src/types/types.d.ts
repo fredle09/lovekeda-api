@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 type TPosition = {
   lat: number;
   long: number;

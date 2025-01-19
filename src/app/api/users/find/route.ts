@@ -1,8 +1,8 @@
 import { successfulResponse } from '@/utils/handlers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 // TODO: Replace this with your own data
-export const USER_DATA = [
+const USER_DATA = [
   {
     id: "1",
     name: "Nguyễn Văn Hiếu",
