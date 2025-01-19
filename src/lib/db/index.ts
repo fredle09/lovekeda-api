@@ -14,17 +14,13 @@ if (!cached) {
 }
 
 export async function connectToDb() {
-  if (!MONGODB_URI) {
+  if (!MONGODB_URI)
     throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
-  }
 
-  if (cached.conn) {
-    return cached.conn;
-  }
-
+  if (cached.conn) return cached.conn;
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      bufferCommands: true,
     };
 
     cached.promise = mongoose
