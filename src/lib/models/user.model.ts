@@ -8,6 +8,7 @@ const UserSchema = new Schema({
   coordinate: [{ type: Number }],
   location: { type: String },
   hobbies: [{ type: String }],
+  is_complete_profile: { type: Boolean, default: false },
 }, { strict: false });
 
 export const User = models?.User ?? model('User', UserSchema);
