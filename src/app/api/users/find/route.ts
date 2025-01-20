@@ -1,4 +1,5 @@
-import { successfulResponse } from '@/utils/handlers';
+import { User } from '@/lib/models';
+import { errorResponse, successfulResponse } from '@/utils/handlers';
 import { NextRequest } from 'next/server';
 
 // TODO: Replace this with your own data
@@ -180,20 +181,43 @@ const USER_DATA = [
 ] as const;
 
 export async function GET(req: NextRequest) {
-  const { search = '', limit = '10', page = '1' } = Object.fromEntries(req.nextUrl.searchParams);
+  const { searchParams } = req.nextUrl;
+  const search = searchParams.get('search') ?? '';
+  const limit = Number(searchParams.get('limit')) || 10;
+  const page = Number(searchParams.get('page')) || 1;
+  const gender = searchParams.get('gender') ?? 'all';
+  const age = searchParams.get('age') ?? 'all';
+  const distance = Number(searchParams.get('distance')) || 100;
+  const lat = searchParams.get('lat');
+  const long = searchParams.get('long');
 
-  let data = [...USER_DATA];
-
-  if (search) {
-    data = data.filter(user =>
-      user.name.toLowerCase().includes(search.toLowerCase())
-    );
+  const filter = {} as any;
+  if (search) filter.name = { $regex: new RegExp(search, 'i') };
+  if (gender && gender !== "all") filter.gender = gender;
+  if (age && age !== "all") {
+    const [min, max] = age.split('-').map(Number);
+    filter.age = { $gte: min, $lte: max };
+  }
+  if (lat && long) {
+    filter.locate = {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [Number(long), Number(lat)],
+        },
+        $maxDistance: distance * 1000,
+      },
+    };
   }
 
-  const startIndex = (Number(page) - 1) * Number(limit);
-  const endIndex = startIndex + Number(limit);
+  try {
+    const user = await User.find(filter)
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-  data = data.slice(startIndex, endIndex);
-
-  return successfulResponse({ data });
+    return successfulResponse({ data: user });
+  } catch (error: any) {
+    console.error("🚀 ~ GET ~ error:", error.message)
+    return errorResponse({ message: error?.message ?? "Unknown error" });
+  }
 }
