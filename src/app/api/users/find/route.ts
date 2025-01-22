@@ -189,8 +189,8 @@ export async function GET(req: NextRequest) {
   const gender = searchParams.get('gender') ?? 'all';
   const age = searchParams.get('age') ?? 'all';
   const distance = Number(searchParams.get('distance')) || 50;
-  const lat = searchParams.get('lat');
-  const long = searchParams.get('long');
+  const lat = Number(searchParams.get('lat'));
+  const long = Number(searchParams.get('long'));
 
   const filter = {} as any;
   if (search) filter.name = { $regex: new RegExp(search, 'i') };
@@ -199,7 +199,7 @@ export async function GET(req: NextRequest) {
     const [min, max] = age.split('-').map(Number);
     filter.age = { $gte: min, $lte: max };
   }
-  if (lat && long) {
+  if (lat && long && !isNaN(lat) && !isNaN(long)) {
     filter.locate = {
       $near: {
         $geometry: {
@@ -216,7 +216,7 @@ export async function GET(req: NextRequest) {
       .skip((page - 1) * limit)
       .limit(limit);
 
-    if (lat && long) {
+    if (lat && long && !isNaN(lat) && !isNaN(long)) {
       for (const user of users) {
         const userLocation = user.locate.coordinates;
         const userDistance = calculateDistance(Number(lat), Number(long), userLocation[1], userLocation[0]);
