@@ -1,4 +1,5 @@
 import { User } from '@/lib/models';
+import { calculateDistance } from '@/utils/functions';
 import { errorResponse, successfulResponse } from '@/utils/handlers';
 import { NextRequest } from 'next/server';
 
@@ -187,7 +188,7 @@ export async function GET(req: NextRequest) {
   const page = Number(searchParams.get('page')) || 1;
   const gender = searchParams.get('gender') ?? 'all';
   const age = searchParams.get('age') ?? 'all';
-  const distance = Number(searchParams.get('distance')) || 100;
+  const distance = Number(searchParams.get('distance')) || 50;
   const lat = searchParams.get('lat');
   const long = searchParams.get('long');
 
@@ -211,11 +212,19 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const user = await User.find(filter)
+    const users = await User.find(filter)
       .skip((page - 1) * limit)
       .limit(limit);
 
-    return successfulResponse({ data: user });
+    if (lat && long) {
+      for (const user of users) {
+        const userLocation = user.locate.coordinates;
+        const userDistance = calculateDistance(Number(lat), Number(long), userLocation[1], userLocation[0]);
+        user.distance = userDistance;
+      }
+    }
+
+    return successfulResponse({ data: users });
   } catch (error: any) {
     console.error("🚀 ~ GET ~ error:", error.message)
     return errorResponse({ message: error?.message ?? "Unknown error" });
