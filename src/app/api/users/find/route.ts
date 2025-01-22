@@ -217,11 +217,13 @@ export async function GET(req: NextRequest) {
       .limit(limit);
 
     if (lat && long && !isNaN(lat) && !isNaN(long)) {
-      for (const user of users) {
-        const userLocation = user.locate.coordinates;
-        const userDistance = calculateDistance(Number(lat), Number(long), userLocation[1], userLocation[0]);
-        user.distance = userDistance;
-      }
+      return successfulResponse({
+        data: users.map(user => {
+          const userCoordinates = user.locate.coordinates;
+          const distance = calculateDistance(Number(lat), Number(long), userCoordinates[1], userCoordinates[0]);
+          return { ...user.toJSON(), distance };
+        })
+      });
     }
 
     return successfulResponse({ data: users });
