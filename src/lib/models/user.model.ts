@@ -15,7 +15,7 @@ const PointSchema = new Schema({
 });
 
 const UserSchema = new Schema({
-  user_id: { type: String, required: true },
+  user_id: { type: String, required: true, unique: true, index: true },
   email: { type: String, required: true, unique: true },
   name: { type: String },
   gender: { type: String, enum: ENUM_USER_GENDER, default: ENUM_USER_GENDER.Male },
