@@ -26,6 +26,8 @@ const UserSchema = new Schema({
   location: { type: String },
   hobbies: [{ type: String }],
   is_complete_profile: { type: Boolean, default: false },
-}, { strict: false });
+  matches: { type: [{ type: String }], default: [] },
+  likes: { type: [{ type: String }], default: [] },
+}, { strict: false, timestamps: true });
 
 export const User = models?.User ?? model('User', UserSchema);
