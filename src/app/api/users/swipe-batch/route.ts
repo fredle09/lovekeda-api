@@ -9,18 +9,13 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(swipes)) return badRequestResponse({ message: 'Invalid request' });
 
     const uniqueLikes = [...new Set(swipes.map((swipe) => swipe.target_user_id))];
-
-    await User.updateOne(
-      { user_id },
-      { $addToSet: { likes: { $each: uniqueLikes } } }
+    await User.updateMany(
+      { user_id: { $in: uniqueLikes } },
+      { $addToSet: { likes: user_id } }
     );
 
-    const mutualLikes = await User.find(
-      { user_id: { $in: uniqueLikes }, likes: user_id },
-      { user_id: 1 }
-    ).lean();
-
-    const mutualLikeIds = mutualLikes.map((user) => user.user_id);
+    const { likes } = await User.findOne({ user_id }, { likes: 1 }) as { likes: string[] };
+    const mutualLikeIds = uniqueLikes.filter((id) => likes.includes(id));
 
     if (mutualLikeIds.length > 0) {
       const bulkOps = [
@@ -30,17 +25,17 @@ export async function POST(req: NextRequest) {
             update: { $addToSet: { matches: { $each: mutualLikeIds } } },
           },
         },
-        ...mutualLikeIds.map((id) => ({
-          updateOne: {
-            filter: { user_id: id },
+        {
+          updateMany: {
+            filter: { user_id: { $in: mutualLikeIds } },
             update: { $addToSet: { matches: user_id } },
           },
-        })),
+        },
       ];
-
+    
       await User.bulkWrite(bulkOps);
     }
-
+    
     return successfulResponse({ message: 'Likes and matches updated successfully' });
   } catch (error) {
     console.error(error);
