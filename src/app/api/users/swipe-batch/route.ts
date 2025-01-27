@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
           },
         },
       ];
-    
+
       await User.bulkWrite(bulkOps);
     }
-    
+
     return successfulResponse({ message: 'Likes and matches updated successfully' });
   } catch (error) {
     console.error(error);
